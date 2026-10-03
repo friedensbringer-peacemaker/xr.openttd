@@ -1,0 +1,20 @@
+[submodule "third_party/SDL"]
+	path = third_party/SDL
+	url = https://github.com/libsdl-org/SDL.git
+	shallow = true
+[submodule "third_party/xz"]
+	path = third_party/xz
+	url = https://github.com/tukaani-project/xz.git
+	shallow = true
+[submodule "fanport/openttd-android"]
+	path = fanport/openttd-android
+	url = https://github.com/pelya/openttd-android.git
+	shallow = true
+[submodule "engine/OpenTTD"]
+	path = engine/OpenTTD
+	url = https://github.com/friedensbringer-peacemaker/xr.openttd-engine.git
+	branch = xr-quest
+[submodule "third_party/fluidsynth"]
+	path = third_party/fluidsynth
+	url = https://github.com/FluidSynth/fluidsynth.git
+	shallow = true

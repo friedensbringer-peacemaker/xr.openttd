@@ -1,0 +1,78 @@
+// XR-OpenTTD — OpenTTD 15.3 als eigenständige Meta-Quest-App (OpenXR).
+// Baut engine/OpenTTD (Zweig xr-quest) über CMake mit dem OpenXR-Videotreiber (src/video/xr)
+// und verpackt SDL2 (Activity, Audio), den Khronos-OpenXR-Loader und die Spieldaten.
+// Vorher einmal die Host-Tools bauen: ../tools/build-host-tools.sh
+
+plugins {
+    id 'com.android.application' version '8.7.3'
+}
+
+def rootDirAbs = file('..').canonicalPath.replace(File.separator, '/')
+def questVersion = new Properties()
+file('../version.properties').withInputStream { questVersion.load(it) }
+def hostTools = "${rootDirAbs}/.build/host-tools"
+if (!file("${hostTools}/strgen.cmake").exists()) {
+    throw new GradleException("Host-Tools fehlen: zuerst tools/build-host-tools.sh ausführen (${hostTools})")
+}
+def assetDir = "${buildDir}/generated/xr_assets".replace(File.separator, '/')
+
+android {
+    namespace 'xr.openttd'
+    compileSdk 34
+    ndkVersion '30.0.16248370'
+
+    defaultConfig {
+        applicationId 'xr.openttd'
+        minSdk 29
+        targetSdk 34
+        versionCode questVersion.getProperty('versionCode').toInteger()
+        versionName questVersion.getProperty('versionName')
+
+        externalNativeBuild {
+            cmake {
+                arguments '-DANDROID_STL=c++_shared',
+                          '-DXR_QUEST=ON',
+                          "-DXR_THIRD_PARTY=${rootDirAbs}/third_party",
+                          "-DXR_FREE_BASESETS=${rootDirAbs}/original-data/baseset",
+                          "-DXR_SOUNDFONT_DIR=${rootDirAbs}/original-data/soundfont",
+                          "-DXR_ASSET_DIR=${assetDir}",
+                          "-DHOST_BINARY_DIR=${hostTools}",
+                          '-DOPTION_USE_ASSERTS=OFF'
+                abiFilters 'arm64-v8a'
+                targets 'openttd'
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path '../engine/OpenTTD/CMakeLists.txt'
+            version '3.31.6'
+        }
+    }
+
+    sourceSets {
+        main {
+            // SDLActivity & Co. aus derselben SDL-Version, die nativ mitgebaut wird.
+            java.srcDirs = ['src/main/java', '../third_party/SDL/android-project/app/src/main/java']
+            jniLibs.srcDirs = ['../third_party/openxr/lib']
+            assets.srcDirs = [assetDir]
+        }
+    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "XR-OpenTTD-${questVersion.getProperty('versionName')}-${variant.name}.apk"
+        }
+        // Die Spieldaten entstehen erst im nativen Build (Post-Build-Schritt in src/video/xr).
+        tasks.named("merge${variant.name.capitalize()}Assets").configure {
+            dependsOn "externalNativeBuild${variant.name.capitalize()}"
+        }
+    }
+}

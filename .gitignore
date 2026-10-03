@@ -1,0 +1,13 @@
+# Spieldaten (frei oder Original) und Nutzerzustand nie committen
+/original-data/
+*.apk
+/.build/
+/.toolchains/
+/android/build/
+/android/.cxx/
+/android/.gradle/
+/android/local.properties
+# Recherche-Klone (Quelle: README) und Binärdateien
+/upstream/
+/fanport/commandergenius/
+/third_party/openxr/lib/

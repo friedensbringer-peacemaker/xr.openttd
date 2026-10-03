@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- AGENTS.md (XR-Ports-Platform), Regel 6: eigene Ports heißen xr.<name> -->
+    <string name="app_name">xr.openttd</string>
+</resources>
