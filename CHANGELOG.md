@@ -2,6 +2,25 @@
 
 ## Unveröffentlicht
 
+### Neu (Pflichtumfang VR-Menü P3)
+- UX-007 **Zeiger waagerecht / Zeiger senkrecht** im VR-Reiter, Bereich „Zeiger“: ‹ › verschieben den Spiel-Mauspfeil
+  gegen den Strahl um je 0,25 % der Bildbreite/-höhe (±15 %, ‹ = links/oben, › = rechts/unten), Anzeige „0“,
+  „+1,25 %“, „-0,50 %“ (ASCII-Minus, weil die Sprite-Schrift kein „−“ hat). Wirkt auf den Strahltreffer vor der
+  Umrechnung in OpenTTD-Mauskoordinaten und gilt damit für alle Fenster (auch das Schnellmenü, das keine eigene
+  Trefferlogik hat); der Strahl endet weiter am echten Treffer. Gespeichert in `xr.cfg` (`pointer_offset_x/y` in
+  0,25-%-Schritten, beim Laden auf ±60 geklemmt). Logik als Projektkopie von xr-common `xrc::ptroff`
+  (`xr_pointer_offset.h`, TODO xrc/menu.h). „Vibration beim Klick“ steht jetzt im Bereich „Steuerung“, damit der
+  Reiter bei 300 % weiter auf 1920×1080 passt (1056 px hoch).
+- UX-007 Dauerdruck-Wiederholung für ‹ › (P2): Trigger auf dem Knopf gehalten → erste Wiederholung nach 0,45 s, dann
+  alle 0,12 s bis ±15 %, mit kurzem Haptik-Puls je Schritt; endet beim Loslassen oder wenn der Strahl den Knopf
+  verlässt. Stick-Fokus + A im VR-Reiter bewusst nicht: der Reiter ist ein normales OpenTTD-Fenster mit
+  Aufklapplisten, die dann ebenfalls Stick-Bedienung bräuchten, und der rechte Stick scrollt dort Listen/Karte.
+
+### Nachweis
+- **Gebaut:** 0.1.0-preview.11 (versionCode 11), SHA-256 `994d09596633e2b6edbae1f6e1c51f28432cc597b8db9eb7edd676d3f3371477`, Zweig `xr-zeiger-versatz` im Engine-Repo; Host-Tests 1350/180 +
+  7671 Fälle Zeiger-Versatz + Wiederholung, 0 Fehler; `warn-check.ps1` 11/11; APK-Gate bestanden; PC-Selbsttest bestanden
+  (VR-Reiter 594×380 / 1174×704 / 1754×1056 bei 100/200/300 %). Nicht installiert, im Headset offen (`TEST.md` 4a).
+
 ## 0.1.0-preview.10 — 2026-10-02
 
 ### Neu (Pflichtumfang VR-Menü P1–P7)

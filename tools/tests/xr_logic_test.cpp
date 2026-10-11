@@ -1,14 +1,17 @@
 /*
  * Host tests for the header-only VR logic of XR-OpenTTD (no Quest needed):
- * screen pose, ray/screen intersection (flat and curved) and controller input helpers.
+ * screen pose, ray/screen intersection (flat and curved), controller input helpers and the pointer offset.
  *
  *   tools/tests/run.sh
  */
 #include "../../engine/OpenTTD/src/video/xr/xr_input.h"
 #include "../../engine/OpenTTD/src/video/xr/xr_panel.h"
+#include "../../engine/OpenTTD/src/video/xr/xr_pointer_offset.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <limits>
 
 static int _failures = 0;
 
@@ -134,11 +137,79 @@ static void TestInput()
 	Check(z.sample(.3f, true, 500) == 0, "zoom below threshold");
 }
 
+static int _offset_cases = 0;
+
+/* Pointer offset X/Y (VR tab "Zeiger waagerecht/senkrecht"): raster, limits, NaN, stored steps, UV shift. */
+static void TestPointerOffset()
+{
+	Check(ptroff::clampPercent(std::numeric_limits<float>::quiet_NaN()) == 0.f, "offset: NaN -> 0");
+	Check(ptroff::clampPercent(std::numeric_limits<float>::infinity()) == 0.f, "offset: Inf -> 0");
+	Check(ptroff::clampPercent(1.3f) == 1.25f, "offset: rounded to 0.25 raster");
+	Check(ptroff::clampPercent(99.f) == 15.f && ptroff::clampPercent(-99.f) == -15.f, "offset: clamped to +-15 %");
+	Check(!std::signbit(ptroff::clampPercent(-0.1f)), "offset: no -0");
+	Check(ptroff::stepPercent(15.f, 1) == 15.f && ptroff::stepPercent(-15.f, -1) == -15.f, "offset: step stops at the limit");
+	Check(ptroff::clampSteps(1000) == 60 && ptroff::clampSteps(-1000) == -60, "offset: stored steps clamped (xr.cfg)");
+	Check(ptroff::displaySign(0) == 0 && ptroff::displaySign(5) == 1 && ptroff::displaySign(-2) == -1, "offset: display sign");
+	Check(ptroff::displayHundredths(5) == 125 && ptroff::displayHundredths(-2) == 50, "offset: display +1,25 / -0,50");
+	Check(ptroff::apply(.5f, 0.f) == .5f, "offset: 0 leaves the UV unchanged");
+
+	/* Sweep: every stored step and stepping both ways round-trips; apply shifts by p/100 and stays in 0..1. */
+	for (int steps = -ptroff::kMaxSteps - 5; steps <= ptroff::kMaxSteps + 5; ++steps) {
+		const int clamped = ptroff::clampSteps(steps);
+		const float p = ptroff::stepsToPercent(steps);
+		Check(ptroff::percentToSteps(p) == clamped, "offset: steps <-> percent round trip");
+		Check(ptroff::percentToSteps(ptroff::stepPercent(p, 1)) == std::min(clamped + 1, ptroff::kMaxSteps), "offset: > one step");
+		Check(ptroff::percentToSteps(ptroff::stepPercent(p, -1)) == std::max(clamped - 1, -ptroff::kMaxSteps), "offset: < one step");
+		for (int i = 0; i <= 20; ++i) {
+			const float uv = i / 20.f;
+			const float shifted = ptroff::apply(uv, p);
+			Check(shifted >= 0.f && shifted <= 1.f, "offset: UV stays on the image");
+			Check(Near(shifted, std::clamp(uv + p / 100.f, 0.f, 1.f), 1e-6f), "offset: UV shifted by p/100");
+			if (p > 0.f) Check(shifted >= uv, "offset: positive = right/down");
+			if (p < 0.f) Check(shifted <= uv, "offset: negative = left/up");
+			++_offset_cases;
+		}
+	}
+}
+
+/* Hold-to-repeat of the < > buttons: first repeat after 450 ms, then every 120 ms, for any frame time. */
+static void TestHoldRepeat()
+{
+	for (unsigned frame = 1; frame <= 60; ++frame) {
+		for (unsigned held_ms = 0; held_ms <= 3000; held_ms += 37) {
+			ptroff::HoldRepeat r;
+			r.start(1003);
+			int steps = 0;
+			unsigned t = 0;
+			while (t + frame <= held_ms) {
+				steps += r.advance(true, frame);
+				t += frame;
+			}
+			const int expected = t < 450 ? 0 : 1 + static_cast<int>((t - 450) / 120);
+			Check(steps == expected, "repeat: 450 ms, then every 120 ms");
+			Check(r.active(), "repeat: active while held");
+			Check(r.advance(false, frame) == 0 && !r.active(), "repeat: release stops");
+			Check(r.advance(true, 1000) == 0, "repeat: nothing after stop");
+			++_offset_cases;
+		}
+	}
+	/* Holding from 0 to +15 % in 0.25 % steps: 60 steps = click + 59 repeats ≈ 0.45 + 58 × 0.12 s. */
+	ptroff::HoldRepeat r;
+	r.start(1);
+	int offset = ptroff::percentToSteps(ptroff::stepPercent(0.f, 1));
+	for (int ms = 0; ms < 10000; ms += 11) {
+		for (int i = r.advance(true, 11); i > 0; --i) offset = ptroff::percentToSteps(ptroff::stepPercent(ptroff::stepsToPercent(offset), 1));
+	}
+	Check(offset == ptroff::kMaxSteps, "repeat: stops at +15 %");
+}
+
 int main()
 {
 	TestPoseRoundTrip();
 	TestHitSweep();
 	TestInput();
-	std::printf("%s: %d hits, %d misses checked, %d failures\n", _failures == 0 ? "OK" : "FAILED", _hits, _misses, _failures);
+	TestPointerOffset();
+	TestHoldRepeat();
+	std::printf("%s: %d hits, %d misses, %d pointer offset cases checked, %d failures\n", _failures == 0 ? "OK" : "FAILED", _hits, _misses, _offset_cases, _failures);
 	return _failures == 0 ? 0 : 1;
 }

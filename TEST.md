@@ -44,6 +44,7 @@ Erwartet in `<XR-Ordner>/Meta Quest 3/Tests/xr.openttd/<Zeit>/summary.txt`:
 | 3d | Werkzeugleiste → Einstellungen | öffnet **ohne Absturz** (preview.5–8 stürzten ab) | STAB-003 |
 | 3e | Schnellmenü → VR-Einstellungen | Reiter „VR“, Optik wie die anderen Reiter, endet mit „Schließen“; Schnellmenü bleibt dahinter | UX-003 |
 | 4 | VR → Mauspfeil Aus / Klein / Normal / Groß | Pfeil verschwindet bzw. ändert die Größe; Tooltips erscheinen auch bei „Aus“ | UX-002 |
+| 4a | VR → Zeiger waagerecht / senkrecht ‹ › | Spielpfeil wandert je Klick um 0,25 % gegen den Strahl (‹ links/oben, › rechts/unten), Anzeige „0“, „+1,25 %“, „-0,50 %“, Ende bei ±15 %; Strahl selbst bleibt auf dem Treffer; Trigger halten wiederholt nach 0,45 s alle 0,12 s (Vibration je Schritt), Loslassen stoppt | UX-007 |
 | 5 | VR → Bildschirmbreite, Abstand, Höhe | Bildschirm ändert sich sofort; Strahl trifft danach noch genau | VR-003 |
 | 6 | VR → Bildschärfe Aus / Supersampling / Schärfen | kleine Schrift sichtbar unterschiedlich, kein Schwarzbild | VR-004 |
 | 7 | VR → Menügröße 200 % und 300 % | Reiter passt auf den Bildschirm, alle Knöpfe erreichbar | UX-003 |

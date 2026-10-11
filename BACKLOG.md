@@ -16,6 +16,7 @@ Status: Offen → Implementiert (x.y.z) → Quest-Abnahme offen → Im Headset b
 | STAB-002 | P0 | Quest-Abnahme offen | Beenden über das Quest-Menü speichert (Autosave beim Beenden). **Abnahme:** nach Neustart lädt „exit“-Spielstand mit dem letzten Stand |
 | AUDIO-001 | P1 | Quest-Abnahme offen | Musik im Titelbildschirm und im Spiel. **Abnahme:** Musik hörbar, Jukebox zeigt „OpenMSX“ |
 | AUDIO-002 | P1 | Recherche | preview.3 zeigte „NoMusic“ trotz `musicset = OpenMSX`. **Abnahme:** Selbsttest meldet `music_set=OpenMSX` |
+| UX-007 | P1 | Implementiert (0.1.0-preview.11) – Quest-Abnahme offen | Zeiger waagerecht/senkrecht im VR-Reiter (Pflicht P3): ‹ › in 0,25-%-Schritten, ±15 %, gespeichert in `xr.cfg`. **Abnahme:** Spielpfeil lässt sich genau unter den Strahl schieben, ‹ = links/oben, › = rechts/unten, Wert nach Neustart erhalten |
 | UX-002 | P1 | Quest-Abnahme offen | Mauspfeil Aus/Klein/Normal/Groß. **Abnahme:** jede Stufe sichtbar anders, Tooltips funktionieren bei „Aus“ |
 | VR-003 | P1 | Quest-Abnahme offen | Breite/Abstand/Höhe im VR-Reiter. **Abnahme:** Bildschirm ändert sich sofort, Treffer bleiben genau |
 | UX-003 | P1 | Quest-Abnahme offen | VR-Reiter in den Spieleinstellungen. **Abnahme:** Menütaste öffnet/schließt ihn, alle Knöpfe bedienbar bei 200 % und 300 % |
